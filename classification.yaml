@@ -1,0 +1,744 @@
+# Classification of requirements from LDM-556 by how to verify them.
+
+DMS-MWBT-REQ-0001:
+  status: feature-complete
+  priority: 1a
+  script:
+  - Make empty repo with local SQLite+POSIX storage in RSP.
+  - Use `butler transfer-from` to transfer datasets from DP0.x repos to local repo, with transfer=copy.
+DMS-MWBT-REQ-0002:
+  status: feature-complete
+  priority: 1a
+  script:
+  - Print attributes table via Butler APIs, against literally any repo.
+DMS-MWBT-REQ-0003:
+  status: feature-complete
+  priority: 2
+  script:
+  - Make example repo with one schema configuration (e.g. autoincrement dataset IDs).
+  - Run existing migration script that upgrades the repository to the new one.
+  notes:
+    Features we migrate away from often get deprecated and removed; need to run this test while we have a viable migration available so we don't have to invent one for it.
+DMS-MWBT-REQ-0004:
+  status: feature-complete
+  priority: 1a
+  script:
+  - Make example repo.
+  - Run `butler prune-datasets`.
+DMS-MWBT-REQ-0005:
+  status: feature-complete
+  priority: 1a
+  script:
+  - Make example repo.
+  - Run `butler prune-collection`.
+  notes:
+    Requirement says "any storage environment", which isn't really doable unless we enumerate all storage environments.
+    Running the test against both POSIX and S3 seems like it meets the spirit of that text.
+DMS-MWBT-REQ-0006:
+  status: feature-complete
+  priority: 1a
+  script:
+  - Make example repo.
+  - Create TAGGED collection and add some datasets to it.
+  - Try to delete the RUN collection - shouldn't be possible because of references in TAGGED collection.
+  - Try to delete the TAGGED collection - should work, without deleting the datasets.
+  notes:
+    Requirement text assumed a slightly different collections model from what we have.
+    Instead of "reference counting" datasets, we have RUN collections that own datasets and TAGGED collections that don't, but we still guard against improper deletions as the requirement demands.
+DMS-MWBT-REQ-0007:
+  status: feature-complete
+  priority: 1a
+  script:
+  - Make two example repos with overlapping contents.
+  - Transfer both into a third repository, but with different collection names.
+  - Run `queryDatasets` against both collections with `findFirst=True`, and pass the results to `Registry.associate` to make a TAGGED collection that represents the merge.
+  notes:
+    The motivating use case mentioned in the requirement description isn't really relevant for this requirement anymore, because it's actually quite natural to make sure there are no conflicts in the batch context.
+    But we can still do it, and it's still useful for other things.
+DMS-MWBT-REQ-0008:
+  status: feature-complete
+  priority: 1a
+  script:
+  - Run ci_hsc_gen3 or ci_imsim
+DMS-MWBT-REQ-0009:
+  status: feature-complete
+  priority: 1a
+  script:
+  - Run ci_cpp_gen3
+DMS-MWBT-REQ-0010:
+  status: mostly-implemented
+  priority: 1a
+  script:
+  - Make empty repo at RSP.
+  - Use `butler transfer-from` to transfer datasets from DP0.x repos to local repo, with transfer=direct.
+  reuse_script: DMS-MWBT-REQ-0001
+  missing:
+  - DataCoordinate list constraints on queries (DM-31725).
+DMS-MWBT-REQ-0011:
+  status: feature-imminent
+  priority: 1a
+  script:
+  - Make empty repo at RSP.
+  - Use `butler transfer-from` to transfer datasets from DP0.x repos to local repo, with transfer=copy.
+  reuse_script: DMS-MWBT-REQ-0001
+  missing:
+  - DataCoordinate list constraints on queries (DM-31725).
+DMS-MWBT-REQ-0019:
+  status: needs-service
+  priority: 1a
+  script:
+  - Make example repo somewhere other than RSP.
+  - Use `transfer-from` with a remote butler targeting a repository in RSP user space.
+  missing:
+  - Transfer support in https butler.
+  - User data repositories in RSP.
+  - https butler service that can access user data repositories in RSP.
+DMS-MWBT-REQ-0022:
+  status: feature-complete
+  priority: 1b
+  script:
+  - Make empty repo.
+  - Ingest some HSC raws from testdata_ci_hsc.
+  - Ingest some ImSim raws from testdata_ci_imsim.
+DMS-MWBT-REQ-0023:
+  status: hackable
+  priority: 1b
+  script:
+  - Create a DefineVisitsTask subtask implementation that reads WCSs from a different data repository.
+  - Create an empty repo.
+  - Ingest some raws into the empty repo.
+  - Define visits for those raws using processing-output WCSs from /repo/main.
+  notes:
+    We're not really planning to need this functionality in production (maybe as some kind of risk mitigation), so that DefineVisitsTask work doesn't need to be super polished, and could even be a throwaway.
+    We certainly shouldn't demand that we e.g. support using it from the command-line.
+DMS-MWBT-REQ-0024:
+  status: feature-complete
+  priority: 1a
+  script:
+  - Make empty repo.
+  - Register a few collections.
+  - Query for those collections.
+  notes:
+    The architecture of Gen3 butler makes this entirely trivial; the requirement exists because it wasn't at all easy in Gen2.
+DMS-MWBT-REQ-0012:
+  status: feature-complete
+  priority: 1a
+  script:
+  - Run a DRP pipeline subset in RSP, using DP0.x collections as inputs.
+  - Instantiate a butler targeting the output CHAINED collection, and use it to retrieve both new outputs and DP0.x products.
+DMS-MWBT-REQ-0013:
+  status: feature-complete
+  priority: 1a
+  script:
+  - Run a DRP pipeline subset in RSP, using DP0.x collections as inputs.
+  reuse_script: DMS-MWBT-REQ-0012
+  notes:
+    Description says "Data Release"; seems reasonable to declare that DPs are the verification stand-in for those.
+DMS-MWBT-REQ-0014:
+  status: feature-incomplete
+  priority: 1a
+  script:
+  - Use https butler to run QG generation against a DP0.x repo from outside RSP.
+  - Use https butler to transfer QG inputs to a new local repo.
+  - Run QG against local repo.
+  missing:
+  - Transfer support in https butler.
+  - User data repositories in RSP.
+  - https butler service that can access user data repositories in RSP.
+DMS-MWBT-REQ-0015:
+  status: feature-complete
+  priority: 1a
+  script:
+  - DP0.2 processing satisfies this.
+  notes:
+    We utilize this functionality all the time, but the requirement is about "Data Release" processing, and we have other requirements for similar functionality in other contexts.
+    So best to claim this this on the basis of DP processing, I think, rather than a separate test?
+DMS-MWBT-REQ-0016:
+  status: feature-complete
+  priority: 1a
+  script:
+  - Use https butler to run QG generation against a DP0.x repo from outside RSP.
+  - Use https butler to transfer QG inputs to a new local repo.
+  - Run QG against local repo.
+  reuse_script: DMS-MWBT-REQ-0014
+  missing:
+  - Transfer support in https butler.
+  - User data repositories in RSP.
+  - https butler service that can access user data repositories in RSP.
+  notes:
+    Only differs from 0014 in that it uses "intermediates" as inputs.  So maybe start from coaddition, using warps?
+DMS-MWBT-REQ-0017:
+  status: feature-complete
+  priority: 1a
+  script:
+  - Run part of DRP pipeline in RSP.
+  - Run a later part of DRP pipeline in RSP.
+DMS-MWBT-REQ-0018:
+  status: needs-service
+  priority: 1a
+  script:
+  - Use https butler to run QG generation against an RSP user repo from outside RSP.
+  - Use https butler to transfer QG inputs to a new local repo.
+  - Run QG against local repo.
+  missing:
+  - Transfer support in https butler.
+  - User data repositories in RSP.
+  - https butler service that can access user data repositories in RSP.
+  reuse_script: DMS-MWBT-REQ-001
+DMS-MWBT-REQ-0020:
+  status: feature-complete
+  priority: 1a
+  script:
+  - Make empty repo.
+  - Run `butler register-skymap`.
+DMS-MWBT-REQ-0021:
+  status: feature-complete
+  priority: 2
+  script:
+  - Make empty repo.
+  - Run `butler register-skymap`.
+  - Run `butler register-skymap` again.
+  reuse_script: DMS-MWBT-REQ-0020
+DMS-MWBT-REQ-0080:
+  status: feature-complete
+  priority: 1a
+  script:
+  - Run `butler query-datasets` against any major repo (e.g. `/repo/main`).
+DMS-MWBT-REQ-0081:
+  status: feature-complete
+  priority: 1a
+  script:
+  - Run `butler query-datasets` against any major repo (e.g. `/repo/main`), with multiple input collections.
+DMS-MWBT-REQ-0082:
+  status: feature-complete
+  priority: 1a
+  script:
+  - Run `butler query-datasets` against any major repo (e.g. `/repo/main`), with multiple input collections that contain the same unresolved DatasetRefs, with findFirst=False.
+DMS-MWBT-REQ-0087:
+  status: feature-complete
+  priority: 1a
+  script:
+  - Run `butler query-datasets` against any major repo (e.g. `/repo/main`), with multiple input collections that contain the same unresolved DatasetRefs, with findFirst=True.
+  notes:
+    Requirements description makes it clear that findFirst logic is considered adequate for satisfying this requirement, even if that's not obvious from the specification itself.
+DMS-MWBT-REQ-0088:
+  status: feature-complete
+  priority: 1a
+  script:
+  - Run `butler query-datasets` against any major repo (e.g. `/repo/main`), with a WHERE expression involving some dimension metadata fields.
+DMS-MWBT-REQ-0089:
+  status: feature-incomplete
+  priority: 1a
+  script:
+  - Run `butler query-datasets` against any major repo (e.g. `/repo/main`), with a WHERE expression involving some metric values.
+  missing:
+  - Tabular-data Datastore, used to store metrics, backed by opaque tables.
+  - Support for query expressions that reference opaque tables.
+DMS-MWBT-REQ-0090:
+  status: feature-incomplete
+  priority: 1a
+  script:
+  - Run `butler query-datasets` against any major repo (e.g. `/repo/main`), with an uploaded dataset ID constraint.
+  missing:
+  - Upload and query support for lists of dataset IDs.
+DMS-MWBT-REQ-0091:
+  status: unclear
+  priority: 1b
+  notes:
+    This is something we have long talked about adding, but haven't needed yet, and it's not the way we are currently planning to satisfy the linked use cases.
+    We should consider a change request to remove this requirement.
+DMS-MWBT-REQ-0092:
+  status: feature-complete
+  priority: 3
+  script:
+    - Print dimension metadata schema by walking through DimensionUniverse.
+  notes:
+    Requirement talks about high-level interactive tooling, but description makes it clear that middleware is only responsible for exposing the introspection necessary to allow that tooling to be written, and we do.
+DMS-MWBT-REQ-0083:
+  status: feature-complete
+  priority: 1a
+  script:
+    - Run QG generation against any major repo (e.g. `/repo/main`).
+DMS-MWBT-REQ-0084:
+  status: feature-complete
+  priority: 1a
+  script:
+    - Run QG generation for the DRP pipeline against any major repo (e.g. `/repo/main`).
+  reuse_script: DMS-MWBT-REQ-0083
+DMS-MWBT-REQ-0086:
+  status: feature-incomplete
+  priority: 1a
+  script:
+    - Run QG generation in an RSP notebook.
+  notes:
+    Needs a pipetask Python API equivalent.
+    Could use SimplePipelineExecutor to satisfy this, but it'd be better to use something we feel comfortable advertising to notebook users, rather than a placeholder.
+DMS-MWBT-REQ-0085:
+  status: feature-complete
+  priority: 1a
+  script:
+    - Run QG generation against any major repo (e.g. `/repo/main`).
+  reuse_script: DMS-MWBT-REQ-0083
+DMS-MWBT-REQ-0025:
+  status: feature-complete
+  priority: 1a
+  script:
+    - Make an empty repo with the default configuration.
+    - Make an empty repo with configuration that overrides a formatter.
+    - Make an empty repo with configuration that changes a StorageClass's Python type.
+    - Put and get the same datasets to all repos.
+DMS-MWBT-REQ-0026:
+  status: hackable
+  priority: 1a
+  script:
+    - Add a butler method that prints/saves the full expanded config (it's just a private attribute right now).
+    - Use it.
+DMS-MWBT-REQ-0027:
+  status: feature-incomplete
+  priority: 1a
+  script:
+    - Run pipeline with repo config override that uses InMemoryDatastore.
+  missing:
+    - Need to resolve issues with InMemoryDatastore, or at least those inside the middleware (we could live with the "use at your own risk" aliasing issue, as that's probably impossible to really fix).
+DMS-MWBT-REQ-0030:
+  status: feature-complete
+  priority: 1a
+  script:
+    - Make an empty repo with a POSIX datastore, do get/put.
+DMS-MWBT-REQ-0031:
+  status: feature-complete
+  priority: 1a
+  script:
+    - Make an empty repo with an S3 datastore, do get/put.
+DMS-MWBT-REQ-0028:
+  status: feature-incomplete
+  priority: 1a
+  script:
+    - Make an empty repo with a VOSpace datastore, do get/put.
+  missing:
+    - A VOSpace datastore implementation.
+  notes:
+    Is this actually distinct from S3?
+DMS-MWBT-REQ-0029:
+  status: feature-incomplete
+  priority: 1a
+  script:
+    - Make an empty repo with a VOSpace datastore, do get/put.
+  reuse_script: DMS-MWBT-REQ-0028
+  missing:
+    - A VOSpace datastore implementation.
+  notes:
+    Is this actually distinct from S3?
+DMS-MWBT-REQ-0032:
+  status: unclear
+  priority: 1a
+  notes:
+    Looking at the motivating use case, this requirement seems to really be about supporting both HDF5 and FITS.  But the spec seems to suggest we need to be able to support "any" scientific data format, which is not really enumerable.
+    It also seems to presume that we would have some classes that can be serialized identically to different formats.  But we don't, and I don't really see us adding any just to satisfy this test.
+DMS-MWBT-REQ-0033:
+  status: feature-complete
+  priority: 1a
+  script:
+    - Use a butler to read a subimage via get parameters against any repo.
+DMS-MWBT-REQ-0034:
+  status: feature-complete
+  priority: 1a
+  script:
+    - Use a butler to read a component (e.g. WCS), against any repo.
+DMS-MWBT-REQ-0035:
+  status: unclear
+  priority: 1a
+  notes:
+    This is not a middleware responsibility; it's a feature of whatever in-memory dataset one is trying to operate on (e.g. afw classes).
+DMS-MWBT-REQ-0040:
+  status: feature-incomplete
+  priority: 1a
+  missing:
+    - Tabular-data Datastore, backed by opaque tables.
+  script:
+    - Create or find repo with tabular data in database.
+    - Create or find repo with S3 storage.
+    - Do Butler.get.
+DMS-MWBT-REQ-0045:
+  status: feature-incomplete
+  priority: 1a
+  missing:
+    - Some kind of rendezvous with EFD.
+DMS-MWBT-REQ-0046:
+  status: feature-complete
+  priority: 1a
+  script:
+    - Run ci_hsc_gen3.
+DMS-MWBT-REQ-0047:
+  status: feature-complete
+  priority: 1a
+  script:
+    - Run ci_hsc_gen3.
+DMS-MWBT-REQ-0048:
+  status: feature-complete
+  priority: 1a
+  script:
+    - Make an empty repo.
+    - Ingest some external parquet or FITS catalog.
+    - Call butler.put.
+DMS-MWBT-REQ-0052:
+  status: unclear
+  priority: 1b
+  notes:
+    We aren't planning to need this for batch purposes anymore.  It's still something we could add on top of existing functionality, but it's not so easy to do so that we would want to implement it just for verification.
+DMS-MWBT-REQ-0053:
+  status: feature-complete
+  priority: 1a
+  script:
+    - Manually create QG with execution butler.
+    - Run butler.get against execution butler.
+  notes:
+    - Execution butler may be removed in favor of something better (prototyping on DM-32072) by the time we run this test, but whatever replaces it will also satisfy this requirement.
+DMS-MWBT-REQ-0054:
+  status: feature-complete
+  priority: 1a
+  script:
+    - Manually create QG with execution butler.
+    - Run butler.get against execution butler for ref that does not exist.
+  notes:
+    - Execution butler may be removed in favor of something better (prototyping on DM-32072) by the time we run this test, but whatever replaces it will also satisfy this requirement.
+DMS-MWBT-REQ-0055:
+  status: feature-complete
+  priority: 1a
+  script:
+    - Enable datastore caching in a Butler client in RSP (or any S3-backed repo).
+    - Run butler.get twice, check (e.g. trace logs) that the second comes from cache.
+DMS-MWBT-REQ-0056:
+  status: unclear
+  priority: 1a
+  notes:
+    Use cases like the one that motivated this requirement assumed a butler that mediated a lot of database access.  Since then we've move toward approaches that us parquet instead, and it's not clear that butler should be playing a role in those workflows.
+DMS-MWBT-REQ-0057:
+  status: unclear
+  priority: 1a
+  notes:
+    See DMS-MWBT-REQ-0056
+DMS-MWBT-REQ-0058:
+  status: feature-complete
+  priority: 1a
+  script:
+    - Enable datastore caching in a Butler client in RSP (or any S3-backed repo).
+    - Run butler.get twice, check (e.g. trace logs) that the second comes from cache.
+  reuse_script: DMS-MWBT-REQ-0055
+  notes:
+    This doesn't really look distinct from DMS-MWBT-REQ-0055 anymore; I think 0055 was perhaps supposed to be some kind of shared-filesystem proxy for something that lives on even slower storage, like tape.  But the specs aren't different enough for me to propose different tests for them.
+DMS-MWBT-REQ-0036:
+  status: feature-complete
+  priority: 1a
+  script:
+    - Run a `PipelineTask` against a local SQLite+POSIX repo.
+    - Run the same `PipelineTask` against a PostgreSQL+POSIX repo.
+    - Run the same `PipelineTask` against a PostgreSQL+S3 repo.
+  notes:
+    The "same interface" demanded by this requirement was really a core design constraint, so now that we have a butler at all it's trivially verifiable.
+DMS-MWBT-REQ-0037:
+  status: feature-complete
+  priority: 1a
+  script:
+    - Instantiate a butler on RSP targeting DP0.x collections.
+    - Call Butler.get.
+DMS-MWBT-REQ-0038:
+  status: unclear
+  priority: 1a
+  notes:
+    Lots of assumptions here that I'm not sure are valid anymore, involving VOSpace and notebook-launched batch jobs.  Probably needs to be rewritten to reflect (or ideally not depend at all) on current designs.
+DMS-MWBT-REQ-0039:
+  status: feature-complete
+  priority: 1a
+  script:
+    - Instantiate a Butler at NCSA targeting a test run in `/repo/main`.
+    - Call Butler.get.
+  reuse_script: DMS-MWBT-REQ-0037
+DMS-MWBT-REQ-0041:
+  status: feature-incomplete
+  priority: 1a
+  missing:
+    - Some kind of rendezvous with EFD.
+DMS-MWBT-REQ-0042:
+  status: feature-incomplete
+  priority: 1a
+  missing:
+    - Some kind of rendezvous with EFD.
+DMS-MWBT-REQ-0043:
+  status: feature-incomplete
+  priority: 1a
+  missing:
+    - Some kind of rendezvous with EFD.
+DMS-MWBT-REQ-0044:
+  status: feature-incomplete
+  priority: 1a
+  missing:
+    - Some kind of rendezvous with EFD.
+  notes:
+    May not be a valid requirement anymore, since it's about unified access to differed flavors of EFD, and those flavors may not exist anymore.
+DMS-MWBT-REQ-0049:
+  status: feature-complete
+  priority: 1a
+  notes:
+    Middleware work is done, but verification may be blocked by summit/base/USDF systems that don't full exist yet.
+DMS-MWBT-REQ-0050:
+  status: feature-incomplete
+  priority: 1a
+  missing:
+    The functionality Tim calls "raw+".  Could be doable on top of butler easily, by defining a new dataset type for the updated metadata and combining them in code that lives outside butler, but making it look like `Butler.get` (if needed) would be harder as it involves composition stuff that may or may not be able to do it yet.  The  ARCH3 use case could easily be satisfied by applying the updates in the PipelineTask instead.
+DMS-MWBT-REQ-0051:
+  status: feature-incomplete
+  priority: 1a
+  missing:
+    Composite dataset component-overrides.  I am now skeptical that this is really best done under butler, rather than above it; this is again driven by the ARCH3 use case, which doesn't really need it.
+DMS-MWBT-REQ-0059:
+  status: feature-complete
+  priority: 1a
+  notes:
+    This was a major architectural change from Gen2, but it's now something we do all the time.
+DMS-MWBT-REQ-0060:
+  status: feature-complete
+  priority: 1a
+  notes:
+    We haven't used this in production that I am aware of (production always uses configuration defaults), but the functionality is included in `daf_butler` unit test suite.
+DMS-MWBT-REQ-0063:
+  status: feature-complete
+  priority: 1a
+  notes:
+    Not regularly exercised in production, but functionality is tested in daf_butler unit tests.
+DMS-MWBT-REQ-0064:
+  status: feature-complete
+  priority: 1a
+  notes:
+    In regular use in production and included in unit tests.
+DMS-MWBT-REQ-0065:
+  status: feature-incomplete
+  priority: 1a
+  missing:
+    We can do remote writes to object stores, but no database datastore yet.  Note that when we do have one, it probably won't actually involve remote writes to a SQL database *during execution*, because that doesn't scale, but the data will land in a SQL database eventually, and the user shouldn't care about that distinction (so neither should the requirement).
+DMS-MWBT-REQ-0066:
+  status: feature-complete
+  priority: 1a
+  notes:
+    In regular use in production and included in unit tests.
+DMS-MWBT-REQ-0072:
+  status: feature-incomplete
+  priority: 1a
+  missing:
+    Driving use case is the subject of DMTN-203 (still needs to be written).
+DMS-MWBT-REQ-0073:
+  status: feature-complete
+  priority: 1a
+  notes:
+    Blocking writes works in all of the Datastores we provide, and we've learned from mishaps at CCIN2P3 that not blocking until writes are fully flushed very quickly causes problems with batch execution.
+DMS-MWBT-REQ-0074:
+  status: feature-complete
+  priority: 1a
+  notes:
+    Attempted-clobber being an error is in fact the only available behavior at the butler level.
+DMS-MWBT-REQ-0075:
+  status: feature-complete
+  priority: 1a
+  notes:
+    Satisfied by what `Butler.put` returns.  Exercised all over our unit tests.
+DMS-MWBT-REQ-0076:
+  status: feature-complete
+  priority: 1a
+  notes:
+    This is certainly the usual behavior, and we regard it as a bug when it is violated, and we don't currently have any known bugs of this type.
+DMS-MWBT-REQ-0077:
+  status: feature-complete
+  priority: 1a
+  notes:
+    I think we can say we can already do this with a combination of `get` and `put`.  If we can't, I'm not sure it's worth trying to do more under butler, because it's easier to do above it.
+DMS-MWBT-REQ-0078:
+  status: feature-complete
+  priority: 1a
+  notes:
+    This behavior is not guaranteed by code, but it is the way we have configured our filename templates.
+DMS-MWBT-REQ-0079:
+  status: unclear
+  priority: 1b
+  notes:
+    This isn't how we are doing batch processing, and we don't plan to start doing it this way.  Low-level functionality for doing this exists, but writing the high-level part in BPS is probably a waste of time.
+DMS-MWBT-REQ-0061:
+  status: feature-complete
+  priority: 1a
+  notes:
+    We do this all the time in production and in integration tests.
+DMS-MWBT-REQ-0062:
+  status: feature-complete
+  priority: 1a
+  notes:
+    We do this all the time in production and in integration tests.
+DMS-MWBT-REQ-0067:
+  status: feature-complete
+  priority: 1a
+  notes:
+    This is a fundamental part of the design of the butler (even in Gen2).
+DMS-MWBT-REQ-0069:
+  status: feature-incomplete
+  priority: 1a
+  notes:
+    Needs to actually have an Alert Production compute environment, and butler support for, but it's a given that once we have one this requirement will be satisfied.
+DMS-MWBT-REQ-0068:
+  status: feature-complete
+  priority: 1a
+  notes:
+    Demonstrated by regular reprocessing runs at NCSA and DP0.2 production.
+DMS-MWBT-REQ-0070:
+  status: feature-complete
+  priority: 1a
+  notes:
+    Demonstrated by any Science Platform notebook that uses the butler.
+DMS-MWBT-REQ-007:
+  status: feature-complete
+  priority: 1a
+  notes:
+    Demonstrated by regular reprocessing runs at NCSA.
+DMS-MWBT-REQ-0093:
+  status: feature-incomplete
+  priority: 2
+  missing:
+    Needs provenance work, to be described on DMTN-205.
+DMS-MWBT-REQ-0094:
+  status: feature-incomplete
+  priority: 1a
+  missing:
+    Needs provenance work, to be described on DMTN-205.  Not clear how much this is still considered a Data Backbone Responsibility, though.
+DMS-MWBT-REQ-0095:
+  status: feature-incomplete
+  priority: 1a
+  missing:
+    Needs provenance work, to be described on DMTN-205.
+DMS-MWBT-REQ-0096:
+  status: feature-incomplete
+  priority: 2
+  missing:
+    Needs provenance work, to be described on DMTN-205.
+DMS-MWST-REQ-0001:
+  status: feature-complete
+  notes:
+    This is a fundamental part of the design of PipelineTask.
+DMS-MWST-REQ-0002:
+  status: feature-complete
+  notes:
+    This is a fundamental part of the design of PipelineTask.
+DMS-MWST-REQ-0018:
+  status: feature-complete
+  notes:
+    Satisfied by BPS plugin system; we have plugins for many workflow systems already.
+DMS-MWST-REQ-0019:
+  status: feature-incomplete
+  missing:
+    I'm not sure all of the listed environments are needed (or distinct; e.g. do we need anything special for CI?), but we at least need a near-real-time environment for AP to satisfy this.
+DMS-MWST-REQ-0020:
+  status: feature-complete
+  notes:
+    Requirement is an attempt to require a QuantumGraph generation algorithm that is common to all execution environments, without actually saying QuantumGraph generation.
+DMS-MWST-REQ-0021:
+  status: feature-complete
+  notes:
+    Satisfied by existence of QuantumGraph generation code.
+DMS-MWST-REQ-0022:
+  status: feature-complete
+  notes:
+    Satisfied by QuantumGraph being serializable.
+DMS-MWST-REQ-0023:
+  status: feature-complete
+  notes:
+    This is just how the execution system works.
+DMS-MWST-REQ-0025:
+  status: feature-complete
+  notes:
+    We do logging in pipetask.
+DMS-MWST-REQ-0024:
+  status: feature-incomplete
+  missing:
+    Needs provenance work, to be described on DMTN-205.
+DMS-MWST-REQ-0026:
+  status: unclear
+  notes:
+    I'm not even sure what this means; it references some "originally proposed provenance mechanism" that _isn't_ what the requirement tries to capture.
+    It _might_ mean "actual" vs "predicted" linkage, which is something we do intend to provide, however.
+DMS-MWST-REQ-0027:
+  status: feature-incomplete
+  missing:
+    Given the text we could arguably claim this now, based on the flexibility of our boolean expression system.
+    But we've long promised lists of data IDs as inputs to QG generation, and that's really necessary to scale this functionality up to meet the intent of the requirement (i.e. nobody wants to pack hundreds or even thousands of data IDs in a string expression).
+DMS-MWST-REQ-0030:
+  status: unclear
+  notes:
+    This is a pretty big feature request in terms of breaking assumptions we make in how PipelineTasks are ordered and related, and I'm not sure it's the right way to approach the problem of feeding DIAObjects to Alert Generation.
+    But we clearly need to think about how to solve that problem one way or another.
+DMS-MWST-REQ-0031:
+  status: unclear
+  notes:
+    I _think_ we might satisfy this via skipping quanta whose datasets exist in the current output RUN collection (using the same RUN collection is what guarantees config/software/input consistency).
+    But that's a very different description of the functionality from what's in the requirement.
+    Might want to check with GPDF to see if he buys this interpretation.
+    We might also be able to have more sophisticated skip-existing logic when provenance stuff has landed, which would more clearly satisfy the use case of the requirement even if it's not really more similar in terms of description.
+DMS-MWST-REQ-0004:
+  status: feature-complete
+  notes:
+    Pipeline YAML files satisfy this requirement (they don't even need to be ordered; the system can order them itself).
+DMS-MWST-REQ-0005:
+  status: feature-complete
+  notes:
+    Pipeline YAML files satisfy this requirement.
+DMS-MWST-REQ-0006:
+  status: feature-complete
+  notes:
+    Grouping information is actually embedded in the PipelineTask definition, not directly the Pipeline, but since a Pipeline include PipelineTasks, this is still satisfied.
+DMS-MWST-REQ-0007:
+  status: feature-complete
+  notes:
+    See notes for DMS-MWST-REQ-0006.
+DMS-MWST-REQ-0008:
+  status: feature-complete
+  notes:
+    Satisfied by PipelineTask being a subclass of Task.
+DMS-MWST-REQ-0003:
+  status: feature-complete
+  notes:
+    The Pipeline Python API is not heavily utilized, but it certainly does exist and was conceived of as a public interface.
+DMS-MWST-REQ-0010:
+  status: feature-complete
+  notes:
+    This is just how pipetask and BPS work.
+DMS-MWST-REQ-0011:
+  status: feature-complete
+  notes:
+    This is just how pipetask and BPS work.
+DMS-MWST-REQ-0012:
+  status: feature-complete
+  notes:
+    QuantumGraph generation guarantees this.
+DMS-MWST-REQ-0013:
+  status: feature-complete
+  notes:
+    This is how pipetask and BPS work.
+DMS-MWST-REQ-0009:
+  status: unclear
+  notes:
+    It looks like someone wants to delete this as redundant with -0013.  But we can do it all.
+DMS-MWST-REQ-0014:
+  status: feature-complete
+  notes:
+    Spec for this is almost impossible to understand on its own, but description makes it clear that we've satisfied this with the PipelineTask design.
+DMS-MWST-REQ-0015:
+  status: unclear
+  notes:
+    I was either not aware of this one or had forgotten about it.  I am skeptical that Pipeline is the right place for this functionality, but the lack of a motivating use case makes it hard to reason about.
+DMS-MWST-REQ-0016:
+  status: feature-complete
+  notes:
+    What we have here is more of a port of the Gen2 obs-package and command-line override functionality, rather than a "generalization" of it, but I'm not sure what more the requirement wants.
+DMS-MWST-REQ-0017:
+  status: feature-complete
+  notes:
+    Satisfied by having a YAML format for Pipelines.
+DMS-MWST-REQ-0029:
+  status: unclear
+  notes:
+    I am not convinced that using butler to send alerts to the distribution system is actually the best approach, but the requirement allows for that possibility, and clearly if we *do* use the butler it can't get in the way of the performance requirements.
