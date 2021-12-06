@@ -60,11 +60,15 @@ DMS-MWBT-REQ-0008:
   priority: 1a
   script:
   - Run ci_hsc_gen3 or ci_imsim
+  jira:
+  - LVV-T1985
 DMS-MWBT-REQ-0009:
   status: feature-complete
   priority: 1a
   script:
   - Run ci_cpp_gen3
+  jira:
+  - LVV-T1985
 DMS-MWBT-REQ-0010:
   status: mostly-implemented
   priority: 1a
@@ -100,6 +104,8 @@ DMS-MWBT-REQ-0022:
   - Make empty repo.
   - Ingest some HSC raws from testdata_ci_hsc.
   - Ingest some ImSim raws from testdata_ci_imsim.
+  jira:
+  - LVV-T1985
 DMS-MWBT-REQ-0023:
   status: hackable
   priority: 1b
@@ -126,6 +132,8 @@ DMS-MWBT-REQ-0012:
   script:
   - Run a DRP pipeline subset in RSP, using DP0.x collections as inputs.
   - Instantiate a butler targeting the output CHAINED collection, and use it to retrieve both new outputs and DP0.x products.
+  jira:
+  - LVV-T1983
 DMS-MWBT-REQ-0013:
   status: feature-complete
   priority: 1a
@@ -191,6 +199,7 @@ DMS-MWBT-REQ-0020:
   script:
   - Make empty repo.
   - Run `butler register-skymap`.
+  jira: LVV-T1982
 DMS-MWBT-REQ-0021:
   status: feature-complete
   priority: 2
@@ -369,11 +378,16 @@ DMS-MWBT-REQ-0046:
   priority: 1a
   script:
     - Run ci_hsc_gen3.
+  jira:
+  - LVV-T1982
+  - LVV-T1985
 DMS-MWBT-REQ-0047:
   status: feature-complete
   priority: 1a
   script:
     - Run ci_hsc_gen3.
+  jira:
+  - LVV-T1982
 DMS-MWBT-REQ-0048:
   status: feature-complete
   priority: 1a
@@ -682,22 +696,37 @@ DMS-MWST-REQ-0004:
   status: feature-complete
   notes:
     Pipeline YAML files satisfy this requirement (they don't even need to be ordered; the system can order them itself).
+  jira:
+  - LVV-T1982
+  - LVV-T1983
 DMS-MWST-REQ-0005:
   status: feature-complete
   notes:
     Pipeline YAML files satisfy this requirement.
+  jira:
+  - LVV-T1982
+  - LVV-T1983
 DMS-MWST-REQ-0006:
   status: feature-complete
   notes:
     Grouping information is actually embedded in the PipelineTask definition, not directly the Pipeline, but since a Pipeline include PipelineTasks, this is still satisfied.
+  jira:
+  - LVV-T1982
+  - LVV-T1983
 DMS-MWST-REQ-0007:
   status: feature-complete
   notes:
     See notes for DMS-MWST-REQ-0006.
+  jira:
+  - LVV-T1982
+  - LVV-T1983
 DMS-MWST-REQ-0008:
   status: feature-complete
   notes:
     Satisfied by PipelineTask being a subclass of Task.
+  jira:
+  - LVV-T1982
+  - LVV-T1983
 DMS-MWST-REQ-0003:
   status: feature-complete
   notes:
@@ -706,18 +735,30 @@ DMS-MWST-REQ-0010:
   status: feature-complete
   notes:
     This is just how pipetask and BPS work.
+  jira:
+  - LVV-T1982
+  - LVV-T1983
 DMS-MWST-REQ-0011:
   status: feature-complete
   notes:
     This is just how pipetask and BPS work.
+  jira:
+  - LVV-T1982
+  - LVV-T1983f
 DMS-MWST-REQ-0012:
   status: feature-complete
   notes:
     QuantumGraph generation guarantees this.
+  jira:
+  - LVV-T1982
+  - LVV-T1983
 DMS-MWST-REQ-0013:
   status: feature-complete
   notes:
     This is how pipetask and BPS work.
+  jira:
+  - LVV-T1982
+  - LVV-T1983
 DMS-MWST-REQ-0009:
   status: unclear
   notes:
@@ -726,6 +767,9 @@ DMS-MWST-REQ-0014:
   status: feature-complete
   notes:
     Spec for this is almost impossible to understand on its own, but description makes it clear that we've satisfied this with the PipelineTask design.
+  jira:
+  - LVV-T1982
+  - LVV-T1983
 DMS-MWST-REQ-0015:
   status: unclear
   notes:
@@ -738,6 +782,9 @@ DMS-MWST-REQ-0017:
   status: feature-complete
   notes:
     Satisfied by having a YAML format for Pipelines.
+  jira:
+  - LVV-T1982
+  - LVV-T1983
 DMS-MWST-REQ-0029:
   status: unclear
   notes:
